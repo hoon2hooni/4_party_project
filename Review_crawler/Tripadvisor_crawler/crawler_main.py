@@ -21,7 +21,7 @@ driver.get(url)
 comment_list = [[] for i in range(3)] # range안 인자는 comment_tags의 len만큼
 page = 0
 
-f = open(f'{search}.csv', 'w', encoding='utf-8', newline='') # csv 생성 준비
+f = open(f'Tripadvisor_{search}.csv', 'w', encoding='utf-8', newline='') # csv 생성 준비
 csvWriter = csv.writer(f) # writer
 
 while True:
