@@ -10,7 +10,6 @@ url = "https://www.booking.com/"
 # options = webdriver.ChromeOptions()
 # options.add_argument('--headless')
 # options.add_argument('--window-size=1920x1080')
-# options.add_argument("--disable-gpu")
 
 browser = webdriver.Chrome(path)
 browser.get(url)
@@ -25,11 +24,11 @@ search_button.click()
 time.sleep(3)
 
 browser.find_element_by_xpath("//div[@id='sort_by']/ul/li[3]/a").click()
-time.sleep(5)
+time.sleep(3)
 
 columns_name = ["HotelName", "HotelAddress", "HotelRating",
                 "ReviewDate", "ReviewTitle", "ReviewRating", "Positive", "Negative"]
-file = open(f'Booking_back.csv', 'w', encoding='utf-8')
+file = open(f'Booking.csv', 'w', encoding='utf-8')
 writer = csv.writer(file)
 writer.writerow(columns_name)
 
@@ -41,23 +40,35 @@ while True:
         browser.switch_to_window(browser.window_handles[-1])
         time.sleep(2)
         HotelName = browser.find_element_by_id("hp_hotel_name").text
-        HotelAddress = browser.find_element_by_class_name(
-            "hp_address_subtitle").text
-        HotelRating = browser.find_element_by_class_name(
-            "bui-review-score__badge").text
-        review_link = browser.find_element_by_id("show_reviews_tab")
-        review_link.click()
-        time.sleep(2)
+        try:
+            HotelAddress = browser.find_element_by_class_name(
+                "hp_address_subtitle").text
+        except:
+            HotelAddress = None
+        try:
+            HotelRating = browser.find_element_by_class_name(
+                "bui-review-score__badge").text
+        except:
+            HotelRating = None
+        try:
+            review_link = browser.find_element_by_id("show_reviews_tab")
+            review_link.click()
+            time.sleep(2)
+        except:
+            browser.close()
+            browser.switch_to_window(browser.window_handles[0])
+            time.sleep(2)
+            continue
         browser.find_element_by_xpath(
             "//div[@id='review_lang_filter']/button[@class='bui-button bui-button--secondary']").click()
         time.sleep(2)
         browser.find_element_by_xpath(
             "//div[@class='bui-dropdown__content']/div/ul/li[2]/button[@data-value='ko']").click()
         time.sleep(2)
-        idx = len(browser.find_elements_by_xpath(
-            "//div[@class='bui-pagination__list page_link']/div[@class='bui-pagination__pages']/div/div"))
-        last_page = browser.find_element_by_xpath(
-            f"//div[@class='bui-pagination__list page_link']/div[@class='bui-pagination__pages']/div/div[{idx}]/a/span[1]").text
+        # idx = len(browser.find_elements_by_xpath(
+        #     "//div[@class='bui-pagination__list page_link']/div[@class='bui-pagination__pages']/div/div"))
+        # last_page = browser.find_element_by_xpath(
+        #     f"//div[@class='bui-pagination__list page_link']/div[@class='bui-pagination__pages']/div/div[{idx}]/a/span[1]").text
         reviews = [[] for _ in range(5)]
         while True:
             columns = [browser.find_elements_by_xpath("//div[@class='bui-list__body']/span"),  # ReviewDate
