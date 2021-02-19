@@ -11,20 +11,36 @@ url = "https://www.booking.com/"
 # options.add_argument('--headless')
 # options.add_argument('--window-size=1920x1080')
 
+def search():
+    search_text = browser.find_element_by_id("ss")
+    search_button = browser.find_element_by_class_name("sb-searchbox__button")
+
+    search_text.send_keys("서울")
+
+    search_button.click()
+    time.sleep(3)
+    return
+
 browser = webdriver.Chrome(path)
 browser.get(url)
 time.sleep(2)
 
-search_text = browser.find_element_by_id("ss")
-search_button = browser.find_element_by_class_name("sb-searchbox__button")
+try:
+    search()
+except:
+    print("서울 검색 실패")
 
-search_text.send_keys("서울")
+try:
+    browser.find_element_by_xpath("//div[@id='filter_hoteltype']/div[2]/a[1]").click()
+    time.sleep(3)
+except:
+    print("인기 필터 검색 실패")
 
-search_button.click()
-time.sleep(3)
-
-browser.find_element_by_xpath("//div[@id='sort_by']/ul/li[3]/a").click()
-time.sleep(3)
+try:
+    browser.find_element_by_xpath("//div[@id='sort_by']/ul/li[4]/a").click()
+    time.sleep(3)
+except:
+    print("요금 순 실패")
 
 columns_name = ["HotelName", "HotelAddress", "HotelRating",
                 "ReviewDate", "ReviewTitle", "ReviewRating", "Positive", "Negative"]
@@ -33,7 +49,11 @@ writer = csv.writer(file)
 writer.writerow(columns_name)
 
 while True:
-    hotel_links = browser.find_elements_by_class_name("sr_item_photo_link")
+    try:
+        hotel_links = browser.find_elements_by_class_name("sr_item_photo_link")
+    except:
+        print("호텔 링크 찾기 실패")
+        break
     for link in hotel_links:
         link.send_keys(Keys.ENTER)
         time.sleep(2)
@@ -55,16 +75,24 @@ while True:
             review_link.click()
             time.sleep(2)
         except:
+            print("리뷰 없음")
             browser.close()
             browser.switch_to_window(browser.window_handles[0])
             time.sleep(2)
             continue
-        browser.find_element_by_xpath(
-            "//div[@id='review_lang_filter']/button[@class='bui-button bui-button--secondary']").click()
-        time.sleep(2)
-        browser.find_element_by_xpath(
-            "//div[@class='bui-dropdown__content']/div/ul/li[2]/button[@data-value='ko']").click()
-        time.sleep(2)
+        try:
+            browser.find_element_by_xpath(
+                "//div[@id='review_lang_filter']/button[@class='bui-button bui-button--secondary']").click()
+            time.sleep(2)
+            browser.find_element_by_xpath(
+                "//div[@class='bui-dropdown__content']/div/ul/li[2]/button[@data-value='ko']").click()
+            time.sleep(2)
+        except:
+            print("한국어 리뷰 없음")
+            browser.close()
+            browser.switch_to_window(browser.window_handles[0])
+            time.sleep(2)
+            continue
         # idx = len(browser.find_elements_by_xpath(
         #     "//div[@class='bui-pagination__list page_link']/div[@class='bui-pagination__pages']/div/div"))
         # last_page = browser.find_element_by_xpath(
@@ -96,7 +124,7 @@ while True:
                 review_next_btn.click()
                 time.sleep(2)
             except:
-                print("review end")
+                print("해당 호텔 리뷰 끝")
                 break
         reviews = list(map(list, zip(*reviews)))
         hotel_info = [HotelName, HotelAddress, HotelRating]
@@ -111,6 +139,6 @@ while True:
         hotel_next_btn.click()
         time.sleep(4)
     except:
-        print("hotel end")
+        print("페이지 끝")
         break
 browser.quit()
