@@ -54,16 +54,15 @@ def get_hotel_review(driver):
         # 추출할 속성들 정리
         comment_tags = [driver.find_elements_by_css_selector('div._2fxQ4TOx'),  # Date
                         driver.find_elements_by_css_selector('div.nf9vGX55'), # Review Rating
-                        driver.find_elements_by_xpath("//div[@class='_2UEC-y30']/div/span"),  # Review Title
+
+                        driver.find_elements_by_css_selector('div.glasR4aX'), # Review Title
                         driver.find_elements_by_css_selector('q.IRsGHoPm')  # review plain txt
                         ]
 
         # 추출한 속성 review_list에 추가
         for d, rr, rt, rpt in zip(*comment_tags):
             review_list.append([hotel_name, hotel_address, hotel_rating * 2, preprocessing_date(d.text),
-                                float(rr.get_attribute('class')[-2:]) / 5, rt.text, rpt.text])
-            print([hotel_name, hotel_address, hotel_rating * 2, preprocessing_date(d.text),
-                                float(rr.get_attribute('class')[-2:]) / 5, rt.text, rpt.text])
+                                float(rr.find_element_by_xpath("descendant::span").get_attribute('class')[-2:]) / 5, rt.text, rpt.text])
         # 다음을 누를 수 있으면 다음
         try :
             review_next_btn = driver.find_element_by_css_selector('a.nav.next')
@@ -127,13 +126,9 @@ for page_num in range(page_size - 1):
 
             # review가 있는 hotel page에서 review 가져오기 시작
             tmp = get_hotel_review(driver)
-            print(len(tmp[0]))
             if len(tmp[0]) > 1 :
                 hotels_review_list += tmp
             driver.switch_to.window(driver.window_handles[0])
-
-    for i in hotels_review_list:
-        print(i)
 
     click_hotel_next_btn(driver)
 
@@ -142,6 +137,8 @@ for page_num in range(page_size - 1):
               index=False,
               header=["HotelName", "HotelAddress", "HotelRating", "ReviewDate", "ReviewRating", "ReviewTitle",
                       "ReviewText"])
+
+    print(f"csv {page_idx} finished")
 
     page_idx += 1
 
